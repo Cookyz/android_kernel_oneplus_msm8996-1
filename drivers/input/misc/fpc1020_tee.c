@@ -348,6 +348,13 @@ static ssize_t report_home_set(struct device *dev,
             input_sync(fpc1020->input_dev);
         }
 	}
+	else if (!strncmp(buf, "timeout", strlen("timeout")))
+	{
+		input_report_key(fpc1020->input_dev,KEY_F2,1);
+		input_sync(fpc1020->input_dev);
+		input_report_key(fpc1020->input_dev,KEY_F2,0);
+		input_sync(fpc1020->input_dev);
+	}
 	else
 		return -EINVAL;
     if(virtual_key_enable){
@@ -474,12 +481,16 @@ static void fpc1020_suspend_resume(struct work_struct *work)
 	struct fpc1020_data *fpc1020 =
 		container_of(work, typeof(*fpc1020), pm_work);
 
-	/* Escalate fingerprintd priority when screen is off */
 	if (fpc1020->screen_state) {
 		set_fpc_irq(fpc1020, true);
 		set_fingerprintd_nice(0);
 	} else {
-		set_fingerprintd_nice(MIN_NICE);
+		/*
+		 * Elevate fingerprintd priority when screen is off to ensure
+		 * the fingerprint sensor is responsive and that the haptic
+		 * response on successful verification always fires.
+		 */
+		set_fingerprintd_nice(-1);
 	}
 
 	sysfs_notify(&fpc1020->dev->kobj, NULL,
