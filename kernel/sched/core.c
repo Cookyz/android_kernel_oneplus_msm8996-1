@@ -1023,7 +1023,7 @@ cap_clamp_update_capacity(struct task_struct *p, unsigned int cap_idx)
 	unsigned int prev_cap = 0;
 	struct task_struct *entry;
 	struct rb_node *node;
-	struct rq_flags rf;
+	unsigned long flags;
 	struct rq *rq;
 
 	/*
@@ -1034,7 +1034,7 @@ cap_clamp_update_capacity(struct task_struct *p, unsigned int cap_idx)
 	 * updates with enqueues, dequeues and migration operations, which is
 	 * the same locking schema already in use by __set_cpus_allowed_ptr().
 	 */
-	rq = task_rq_lock(p, &rf);
+	rq = task_rq_lock(p, &flags);
 
 	/*
 	 * If the task has not a node in the rbtree, it's not yet RUNNABLE or
@@ -1068,7 +1068,7 @@ cap_clamp_update_capacity(struct task_struct *p, unsigned int cap_idx)
 	cap_clamp_insert_capacity(rq, p, cap_idx);
 
 done:
-	task_rq_unlock(rq, p, &rf);
+	task_rq_unlock(rq, p, &flags);
 }
 
 static inline void
