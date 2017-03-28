@@ -339,7 +339,8 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
 	for_each_cpu(j, policy->cpus) {
 		struct sugov_cpu *j_sg_cpu;
 		unsigned long j_util, j_max;
-		unsigned int j_cap_max, j_cap_min;
+		unsigned int j_cap_min = 0;
+		unsigned int j_cap_max = SCHED_CAPACITY_SCALE;
 		s64 delta_ns;
 
 		if (j == smp_processor_id())
